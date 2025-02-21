@@ -1,0 +1,53 @@
+{
+  "name": "postalcodes-india",
+  "version": "0.1.0",
+  "description": "Fast and lightweight Indian postal code (PIN) lookup library with hierarchical location data - states, districts, sub-districts, and coordinates. Zero dependencies and full TypeScript support.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "data"
+  ],
+  "scripts": {
+    "build": "rimraf dist && tsc",
+    "prepare": "npm run build",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "keywords": [
+    "zipcode",
+    "zip",
+    "india",
+    "postal",
+    "code",
+    "lookup",
+    "geo",
+    "location",
+    "address",
+    "find",
+    "find city by postalcode",
+    "find state by postalcode",
+    "find county by postalcode",
+    "find geo by postalcode"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.13.4",
+    "jest": "^29.7.0",
+    "rimraf": "^6.0.1",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ikarthikng/postalcodes-india.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ikarthikng/postalcodes-india/issues"
+  },
+  "homepage": "https://github.com/ikarthikng/postalcodes-india#readme"
+}
