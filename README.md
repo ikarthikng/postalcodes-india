@@ -1,4 +1,4 @@
-# india-postal-codes
+# postalcodes-india
 
 A lightweight and efficient Indian postal code lookup library with no external dependencies.
 
@@ -15,13 +15,13 @@ A lightweight and efficient Indian postal code lookup library with no external d
 ## Installation
 
 ```bash
-npm install india-postal-codes
+npm install postalcodes-india
 ```
 
 ## Usage
 
 ```typescript
-import postalcodes from "india-postal-codes"
+import postalcodes from "postalcodes-india"
 
 // Complete lookup with validity check
 const info = postalcodes.find("744301")
