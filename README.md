@@ -2,6 +2,10 @@
 
 A lightweight and efficient Indian postal code lookup library with no external dependencies.
 
+[![npm version](https://badge.fury.io/js/postalcodes-india.svg)](https://badge.fury.io/js/postalcodes-india.svg)
+
+> I monitor the required dependencies daily and publish updates to the npm package whenever changes are detected.
+
 ## Features
 
 - Fast in-memory postal code lookups
