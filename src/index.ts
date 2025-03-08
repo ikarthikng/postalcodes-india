@@ -5,8 +5,8 @@ import {
   DistrictResult,
   Coordinates,
   LocationHierarchy
-} from "./types"
-import { loadPostalCodeData } from "./loader"
+} from "./types.js"
+import { loadPostalCodeData } from "./loader.js"
 
 // Load postal code data during module initialization
 const postalCodeMap = loadPostalCodeData()
@@ -17,6 +17,11 @@ const postalCodeMap = loadPostalCodeData()
  * @returns Tuple of [normalized postal code, lookup result]
  */
 function normalizedLookup(postalCode: string): [string, PostalCodeInfo | null] {
+  // Handle null or undefined inputs
+  if (postalCode === null || postalCode === undefined) {
+    return ["", null]
+  }
+
   const normalizedPostal = postalCode.trim()
 
   // Indian postal codes are 6 digits

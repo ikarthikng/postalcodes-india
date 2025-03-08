@@ -1,6 +1,6 @@
 # postalcodes-india
 
-A lightweight and efficient Indian postal code lookup library with no external dependencies.
+A lightweight and efficient Indian postal code lookup library with no external dependencies. Compatible with both Node.js and browser/React environments.
 
 [![npm version](https://badge.fury.io/js/postalcodes-india.svg)](https://badge.fury.io/js/postalcodes-india.svg)
 [![Tests](https://github.com/ikarthikng/postalcodes-india/actions/workflows/test-and-publish.yml/badge.svg)](https://github.com/ikarthikng/postalcodes-india/actions?query=workflow%3A"Test+and+Publish")
@@ -18,6 +18,8 @@ A lightweight and efficient Indian postal code lookup library with no external d
 - Returns complete information including state, district, sub-district, and coordinates
 - TypeScript support with full type definitions
 - Zero runtime dependencies
+- **Universal compatibility**: Works in Node.js, browsers, and React applications
+- **Tree-shakable**: Import only what you need
 
 ## Installation
 
@@ -26,6 +28,95 @@ npm install postalcodes-india
 ```
 
 ## Usage
+
+### In Node.js (ESM)
+
+```javascript
+import postalcodes from "postalcodes-india"
+
+// Complete lookup with validity check
+const info = postalcodes.find("560029")
+console.log(info)
+```
+
+### In Node.js (CommonJS)
+
+```javascript
+const postalcodes = require("postalcodes-india")
+
+// Complete lookup with validity check
+const info = postalcodes.find("560029")
+console.log(info)
+```
+
+### In React
+
+```jsx
+import React, { useState } from "react"
+import postalcodes from "postalcodes-india"
+
+function PostalCodeLookup() {
+  const [code, setCode] = useState("")
+  const [result, setResult] = useState(null)
+
+  const handleLookup = () => {
+    const info = postalcodes.find(code)
+    setResult(info)
+  }
+
+  return (
+    <div>
+      <h2>Postal Code Lookup</h2>
+      <input type="text" value={code} onChange={(e) => setCode(e.target.value)} placeholder="Enter postal code" />
+      <button onClick={handleLookup}>Lookup</button>
+
+      {result && (
+        <div>
+          <h3>Results:</h3>
+          {result.isValid ? (
+            <ul>
+              <li>State: {result.state}</li>
+              <li>District: {result.district}</li>
+              <li>Sub-District: {result.subDistrict}</li>
+              <li>Place: {result.place}</li>
+              <li>
+                Coordinates: {result.latitude}, {result.longitude}
+              </li>
+            </ul>
+          ) : (
+            <p>Invalid postal code</p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default PostalCodeLookup
+```
+
+### In Browser (via CDN)
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/postalcodes-india/dist/index.umd.js"></script>
+<script>
+  // The library is available as a global variable 'postalcodes'
+  const info = postalcodes.find("110001")
+  console.log(info)
+</script>
+```
+
+### Tree-shaking (Import only what you need)
+
+```javascript
+import { find, findByRadius } from "postalcodes-india"
+
+// Use specific functions without importing the entire library
+const info = find("400001")
+const nearby = findByRadius(19.076, 72.8777, 5) // 5km radius around Mumbai
+```
+
+## Examples
 
 ```typescript
 import postalcodes from "postalcodes-india"

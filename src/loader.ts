@@ -1,9 +1,8 @@
-import fs from "fs"
-import path from "path"
-import { PostalCodeInfo, RawPostalData } from "./types"
+import { PostalCodeInfo, RawPostalData } from "./types.js"
 
 // Path to the data file, relative to the package root
-const DEFAULT_DATA_PATH = path.join(__dirname, "..", "data", "IN.txt")
+//@ts-ignore
+import postalCodeDataArray from "../data/postal-data.js"
 
 /**
  * Parses a line from the GeoNames IN.txt file
@@ -62,27 +61,20 @@ export function toPostalCodeInfo(rawData: RawPostalData): PostalCodeInfo {
 }
 
 /**
- * Loads postal code data from the file
- * @param filePath Optional custom path to the data file
- * @returns Map of postal codes to their information
+ * Loads postal code data into a Map.
+ *
+ * @returns {Map<string, PostalCodeInfo>} A map where the keys are postal codes and the values are PostalCodeInfo objects.
+ * @throws {Error} If postal code data is not available or not in the correct format.
  */
-export function loadPostalCodeData(filePath: string = DEFAULT_DATA_PATH): Map<string, PostalCodeInfo> {
+export function loadPostalCodeData(): Map<string, PostalCodeInfo> {
   const postalMap = new Map<string, PostalCodeInfo>()
   try {
-    // Read file synchronously - this happens once during initialization
-    const fileContent = fs.readFileSync(filePath, "utf8")
-    const lines = fileContent.split("\n")
-
-    for (const line of lines) {
-      if (!line.trim()) continue
-
-      const rawData = parseLine(line)
-      if (!rawData) continue
-
-      // Only include Indian postal codes
-      if (rawData.countryCode !== "IN") continue
-
-      postalMap.set(rawData.postalCode, toPostalCodeInfo(rawData))
+    if (postalCodeDataArray && Array.isArray(postalCodeDataArray)) {
+      for (const item of postalCodeDataArray) {
+        postalMap.set(item.postalCode, item)
+      }
+    } else {
+      throw new Error("Postal code data not available. Make sure postal-data.js is generated correctly")
     }
 
     return postalMap
