@@ -1,19 +1,36 @@
 {
   "name": "postalcodes-india",
-  "version": "0.1.7",
+  "version": "1.0.0",
   "description": "Fast and lightweight Indian postal code (PIN) lookup library with hierarchical location data - states, districts, sub-districts, and coordinates. Zero dependencies and full TypeScript support.",
   "main": "dist/index.js",
+  "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
+  "browser": "dist/index.umd.js",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "files": [
     "dist",
     "data"
   ],
   "scripts": {
-    "build": "rimraf dist && tsc",
+    "download-data": "node src/scripts/download-data.js",
+    "process-data": "node --max-old-space-size=8192 --loader ts-node/esm src/scripts/process-data.ts",
+    "check-data": "node --no-warnings -e \"import { existsSync } from 'fs'; import { join } from 'path'; if(!existsSync(join('data','postal-data.js'))){console.error('Error: postal-data.js not found! Please run npm run process-data first.');process.exit(1)}\"",
+    "prebuild": "rimraf dist && npm run check-data || npm run process-data",
+    "build": "node --max-old-space-size=8192 node_modules/.bin/rollup -c",
+    "build:types": "tsc --emitDeclarationOnly --outDir dist",
     "prepare": "npm run build",
-    "test": "jest",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "postinstall": "node -e \"const fs=require('fs');const path=require('path');if(!fs.existsSync(path.join('data','postal-data.js'))){console.warn('Warning: postal-data.js not found. If you plan to use this package, run npm run process-data first.')}\""
   },
   "keywords": [
     "postalcode",
@@ -32,18 +49,29 @@
     "find city by postalcode",
     "find state by postalcode",
     "find county by postalcode",
-    "find geo by postalcode"
+    "find geo by postalcode",
+    "browser",
+    "universal",
+    "isomorphic"
   ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.2",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.4",
+    "@types/unzipper": "^0.10.11",
     "jest": "^29.7.0",
     "rimraf": "^6.0.1",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.3"
+    "tslib": "^2.8.1",
+    "typescript": "^5.7.3",
+    "unzipper": "^0.12.3"
   },
   "repository": {
     "type": "git",

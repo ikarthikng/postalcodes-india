@@ -1,0 +1,205 @@
+// src/scripts/process-data.ts
+import fs from "fs"
+import path from "path"
+import { fileURLToPath } from "url"
+import { PostalCodeInfo, RawPostalData } from "../types.js"
+
+// Get current file directory (needed for ES modules)
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// Define paths
+const sourceDataPath = path.join(__dirname, "..", "..", "data", "IN.txt")
+const outputJsPath = path.join(__dirname, "..", "..", "data", "postal-data.js")
+const outputDtsPath = path.join(__dirname, "..", "..", "data", "postal-data.d.ts")
+
+/**
+ * Parses a line from the GeoNames IN.txt file
+ * @param line A tab-separated line from the data file
+ * @returns Parsed postal code data object
+ */
+function parseLine(line: string): RawPostalData | null {
+  const fields = line.split("\t")
+  // Validate basic format - should have at least 12 fields
+  if (fields.length < 12) {
+    return null
+  }
+
+  // Parse latitude and longitude as numbers
+  const latitude = parseFloat(fields[9])
+  const longitude = parseFloat(fields[10])
+
+  // Skip invalid coordinates
+  if (isNaN(latitude) || isNaN(longitude)) {
+    return null
+  }
+
+  return {
+    countryCode: fields[0],
+    postalCode: fields[1],
+    placeName: fields[2],
+    stateName: fields[3],
+    stateCode: fields[4],
+    districtName: fields[5],
+    districtCode: fields[6],
+    subDistrictName: fields[7],
+    communityCode: fields[8],
+    latitude,
+    longitude,
+    accuracy: parseInt(fields[11], 10) || 0
+  }
+}
+
+/**
+ * Converts raw data to the public PostalCodeInfo format
+ * @param rawData Raw data from the parsed file
+ * @returns Clean PostalCodeInfo object for public use
+ */
+function toPostalCodeInfo(rawData: RawPostalData): PostalCodeInfo {
+  return {
+    postalCode: rawData.postalCode,
+    placeName: rawData.placeName,
+    stateName: rawData.stateName,
+    stateCode: rawData.stateCode,
+    districtName: rawData.districtName,
+    districtCode: rawData.districtCode,
+    subDistrictName: rawData.subDistrictName,
+    latitude: rawData.latitude,
+    longitude: rawData.longitude
+  }
+}
+
+/**
+ * Process the data file and generate a JavaScript module
+ */
+async function processData(): Promise<void> {
+  console.log("Processing Postal code data file...")
+
+  try {
+    // Check if the source file exists
+    if (!fs.existsSync(sourceDataPath)) {
+      console.error(`Source data file not found: ${sourceDataPath}`)
+      console.error(`Please download the IN.txt file and place it in the data directory.`)
+      process.exit(1)
+    }
+
+    // Make sure the output directory exists
+    const outputDir = path.dirname(outputJsPath)
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true })
+      console.log(`Created data directory: ${outputDir}`)
+    }
+
+    // Read the raw data file line by line using streams to reduce memory usage
+    const processedData: PostalCodeInfo[] = []
+    let lineBuffer = ""
+    let processedLines = 0
+    let totalLines = 0
+
+    // Create a read stream for better memory performance with large files
+    const readStream = fs.createReadStream(sourceDataPath, {
+      encoding: "utf8",
+      highWaterMark: 1024 * 1024 // 1MB chunks
+    })
+
+    readStream.on("data", (chunk: string | Buffer) => {
+      // Ensure chunk is a string
+      const chunkStr = typeof chunk === "string" ? chunk : chunk.toString("utf8")
+      lineBuffer += chunkStr
+      const lines = lineBuffer.split("\n")
+
+      // Process all complete lines
+      lineBuffer = lines.pop() || ""
+      totalLines += lines.length
+
+      for (const line of lines) {
+        if (!line.trim()) continue
+
+        const rawData = parseLine(line)
+        if (!rawData) continue
+
+        // Only include IN ZIP codes
+        if (rawData.countryCode !== "IN") continue
+
+        processedData.push(toPostalCodeInfo(rawData))
+        processedLines++
+      }
+
+      // Log progress periodically
+      if (processedLines % 10000 === 0) {
+        console.log(`Processed ${processedLines} ZIP codes so far...`)
+      }
+    })
+
+    await new Promise<void>((resolve, reject) => {
+      readStream.on("end", () => {
+        // Process any remaining data in the buffer
+        if (lineBuffer.trim()) {
+          const rawData = parseLine(lineBuffer)
+          if (rawData && rawData.countryCode === "IN") {
+            processedData.push(toPostalCodeInfo(rawData))
+            processedLines++
+          }
+        }
+
+        console.log(`Read ${totalLines} lines from data file`)
+        console.log(`Processed ${processedLines} ZIP codes`)
+        resolve()
+      })
+
+      readStream.on("error", (err) => reject(err))
+    })
+
+    // Write the processed data as a JavaScript module, using stream to handle large data
+    console.log(`Writing data to ${outputJsPath}...`)
+    const writeStream = fs.createWriteStream(outputJsPath)
+
+    writeStream.write(`/**
+ * Auto-generated ZIP code data file
+ * DO NOT EDIT MANUALLY - Generated by process-data.ts
+ */
+export default [`)
+
+    // Write each entry individually to reduce memory pressure
+    for (let i = 0; i < processedData.length; i++) {
+      const entry = JSON.stringify(processedData[i])
+      writeStream.write(entry)
+
+      // Add comma if not the last item
+      if (i < processedData.length - 1) {
+        writeStream.write(",")
+      }
+
+      // Add newline every 100 items for readability
+      if ((i + 1) % 100 === 0) {
+        writeStream.write("\n")
+      }
+    }
+
+    writeStream.write(`];`)
+
+    await new Promise<void>((resolve, reject) => {
+      writeStream.on("finish", () => resolve())
+      writeStream.on("error", (err) => reject(err))
+      writeStream.end()
+    })
+
+    console.log(`Successfully wrote processed data to: ${outputJsPath}`)
+
+    // Create a TypeScript declaration file
+    const dtsContent = `import { PostalCodeInfo } from '../src/types.js'
+
+declare const postalCodeData: PostalCodeInfo[]
+export default postalCodeData
+`
+
+    fs.writeFileSync(outputDtsPath, dtsContent, "utf8")
+    console.log(`Successfully wrote type declaration to: ${outputDtsPath}`)
+  } catch (error) {
+    console.error("Error processing ZIP code data:", error instanceof Error ? error.message : String(error))
+    process.exit(1)
+  }
+}
+
+// Run the script
+processData()
