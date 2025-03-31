@@ -45,9 +45,9 @@ describe("Indian Postal Code Lookup", () => {
         stateCode: "01",
         district: "Nicobar",
         subDistrict: "Carnicobar",
-        place: "Sawai",
-        latitude: 7.5166,
-        longitude: 93.6031,
+        place: "Carnicobar",
+        latitude: 9.1833,
+        longitude: 92.7667,
         isValid: true
       })
     })
@@ -140,7 +140,7 @@ describe("Indian Postal Code Lookup", () => {
     test("should find place information for valid postal code", () => {
       const result = findPlace("744301")
       expect(result).toEqual({
-        place: "Sawai",
+        place: "Carnicobar",
         isValid: true
       })
     })
@@ -163,8 +163,8 @@ describe("Indian Postal Code Lookup", () => {
     test("should find coordinates for valid postal code", () => {
       const result = findCoordinates("744301")
       expect(result).toEqual({
-        latitude: 7.5166,
-        longitude: 93.6031,
+        latitude: 9.1833,
+        longitude: 92.7667,
         isValid: true
       })
     })
@@ -205,7 +205,7 @@ describe("Indian Postal Code Lookup", () => {
         district: "Nicobar",
         districtCode: "638",
         subDistrict: "Carnicobar",
-        place: "Sawai",
+        place: "Carnicobar",
         isValid: true
       })
     })
@@ -232,14 +232,14 @@ describe("Indian Postal Code Lookup", () => {
   // Test finding by place and state
   describe("Find by place and state", () => {
     test("should find postal codes for a given place and state", () => {
-      const results = findByPlace("Sawai", "01")
+      const results = findByPlace("Carnicobar", "01")
       expect(results.length).toBeGreaterThan(0)
-      expect(results[0].placeName).toBe("Sawai")
+      expect(results[0].placeName).toBe("Carnicobar")
       expect(results[0].stateCode).toBe("01")
     })
 
     test("should handle case-insensitive place names", () => {
-      const results = findByPlace("sawai", "01")
+      const results = findByPlace("carnicobar", "01")
       expect(results.length).toBeGreaterThan(0)
     })
 
