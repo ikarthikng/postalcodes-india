@@ -7,7 +7,7 @@ A lightweight and efficient Indian postal code lookup library with no external d
 
 > I try my best to monitor the required dependencies daily and publish updates to the npm package whenever changes are detected.
 
-## 🔄 **Data Last Updated:** _31st March 2025_
+## 🔄 **Data Last Checked/Updated:** _8th April 2025_
 
 ## Features
 
