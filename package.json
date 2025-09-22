@@ -1,6 +1,6 @@
 {
   "name": "postalcodes-india",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Fast and lightweight Indian postal code (PIN) lookup library with hierarchical location data - states, districts, sub-districts, and coordinates. Zero dependencies and full TypeScript support.",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
