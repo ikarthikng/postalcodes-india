@@ -24,6 +24,38 @@ A lightweight and efficient Indian postal code lookup library with no external d
 - **Universal compatibility**: Works in Node.js, browsers, and React applications
 - **Tree-shakable**: Import only what you need
 
+## Why Choose postalcodes-india?
+
+- **🚀 Zero Dependencies** - No bloat, just pure functionality
+- **⚡ Lightning Fast** - In-memory lookups with instant results
+- **🌐 Universal** - Same code works in Node.js, React, Next.js, and browsers
+- **📦 Tiny Bundle** - Minimal impact on your bundle size
+- **🔄 Always Up-to-Date** - Data checked and updated daily
+- **💪 Type-Safe** - Full TypeScript support out of the box
+- **🇮🇳 Complete Coverage** - All 19,000+ Indian postal codes
+
+**Compared to alternatives:**
+
+- Unlike API-based solutions, no rate limits or network latency
+- Unlike other npm packages, we support both Node.js and browsers seamlessly
+- Tree-shakable design - import only what you need
+
+## 🚀 Try It Now
+
+**Live Demo:** [CodeSandbox Demo](https://codesandbox.io/p/sandbox/awesome-tree-swv4kn)
+
+**Quick Example:**
+
+```javascript
+import postalcodes from "postalcodes-india"
+
+// One line to get complete postal code info
+const info = postalcodes.find("560029")
+// → { place: 'Bangalore', state: 'Karnataka', district: 'Bangalore', ... }
+```
+
+**Looking for US ZIP codes?** Check out [zipcodes-us](https://github.com/ikarthikng/zipcodes-us) 🇺🇸
+
 ## Installation
 
 ```bash
@@ -117,6 +149,52 @@ import { find, findByRadius } from "postalcodes-india"
 // Use specific functions without importing the entire library
 const info = find("400001")
 const nearby = findByRadius(19.076, 72.8777, 5) // 5km radius around Mumbai
+```
+
+## 💡 Common Use Cases
+
+### Validate Postal Codes
+
+```typescript
+// Check if a postal code is valid
+const info = postalcodes.find("560029")
+if (info.isValid) {
+  console.log(`Valid postal code in ${info.place}, ${info.state}`)
+}
+```
+
+### Auto-Complete Location from Postal Code
+
+```typescript
+// User enters postal code, auto-fill location details
+const { place, district, state } = postalcodes.find(userPostalCode)
+addressForm.city.value = place
+addressForm.district.value = district
+addressForm.state.value = state
+```
+
+### Find All Postal Codes in a District
+
+```typescript
+// Get all postal codes for a specific district
+const allBangalorePostals = postalcodes.findByDistrict("Bangalore", "29")
+console.log(`Bangalore has ${allBangalorePostals.length} postal codes`)
+```
+
+### Geographic Proximity Search
+
+```typescript
+// Find postal codes within 20 kilometers of coordinates
+const nearbyPostals = postalcodes.findByRadius(12.9716, 77.5946, 20)
+// Use these for location-based features
+```
+
+### Display Location Hierarchy
+
+```typescript
+// Show complete location hierarchy from postal code
+const hierarchy = postalcodes.findHierarchy("560029")
+console.log(`${hierarchy.place}, ${hierarchy.subDistrict}, ${hierarchy.district}, ${hierarchy.state}`)
 ```
 
 ## Examples
@@ -309,6 +387,10 @@ Finds postal codes within a radius of coordinates, sorted by distance. Returns a
 `getStates(): Array<{ code: string, name: string }>`
 
 Returns all states and union territories with their codes and names.
+
+## Related Projects
+
+Looking for US ZIP codes? Check out **[zipcodes-us](https://github.com/ikarthikng/zipcodes-us)** - the same functionality for the United States! 🇺🇸
 
 ## Data Source
 
