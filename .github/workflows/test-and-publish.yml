@@ -44,6 +44,10 @@ jobs:
     needs: test
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
+    environment: npm-publish # Added for OIDC
+    permissions:
+      contents: read
+      id-token: write # Required for OIDC
     steps:
       - uses: actions/checkout@v3
 
@@ -52,6 +56,9 @@ jobs:
         with:
           node-version: "20.x"
           registry-url: "https://registry.npmjs.org"
+
+      - name: Update npm to latest # Required for Trusted Publishers
+        run: npm install -g npm@latest
 
       - name: Install dependencies
         run: npm ci
@@ -78,9 +85,7 @@ jobs:
 
       - name: Publish to npm
         if: steps.check-version.outputs.should_publish == 'true'
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
 
       - name: Notify about skipped publish
         if: steps.check-version.outputs.should_publish == 'false'
