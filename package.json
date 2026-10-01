@@ -1,6 +1,6 @@
 {
   "name": "postalcodes-india",
-  "version": "1.1.4",
+  "version": "1.2.0",
   "description": "Fast and lightweight Indian postal code (PIN) lookup library with hierarchical location data - states, districts, sub-districts, and coordinates. Zero dependencies and full TypeScript support.",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -22,15 +22,12 @@
   "scripts": {
     "download-data": "node src/scripts/download-data.js",
     "process-data": "node --max-old-space-size=8192 --loader ts-node/esm src/scripts/process-data.ts",
-    "check-data": "node --no-warnings -e \"import { existsSync } from 'fs'; import { join } from 'path'; if(!existsSync(join('data','postal-data.js'))){console.error('Error: postal-data.js not found! Please run npm run process-data first.');process.exit(1)}\"",
-    "prebuild": "rimraf dist && npm run check-data || npm run process-data",
+    "prebuild": "rimraf dist && npm run process-data",
     "build": "node --max-old-space-size=8192 node_modules/.bin/rollup -c",
-    "build:types": "tsc --emitDeclarationOnly --outDir dist",
     "prepare": "npm run build",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "postinstall": "node -e \"const fs=require('fs');const path=require('path');if(!fs.existsSync(path.join('data','postal-data.js'))){console.warn('Warning: postal-data.js not found. If you plan to use this package, run npm run process-data first.')}\""
+    "test:coverage": "jest --coverage"
   },
   "keywords": [
     "postalcode",
@@ -57,9 +54,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "rollup": "^4.35.0",
     "@rollup/plugin-commonjs": "^28.0.6",
-    "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.4",
@@ -68,6 +63,7 @@
     "@types/unzipper": "^0.10.11",
     "jest": "^30.2.0",
     "rimraf": "^6.0.1",
+    "rollup": "^4.35.0",
     "ts-jest": "^29.4.5",
     "ts-node": "^10.9.2",
     "tslib": "^2.8.1",

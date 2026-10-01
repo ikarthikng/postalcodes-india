@@ -12,12 +12,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v5
         with:
-          node-version: "20.x"
+          node-version: "24.x"
 
       - name: Install dependencies
         run: npm ci
@@ -29,7 +29,7 @@ jobs:
 
       - name: Check test results
         if: steps.run-tests.outcome == 'failure'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           script: |
             github.rest.issues.createComment({
@@ -49,15 +49,15 @@ jobs:
       contents: read
       id-token: write # Required for OIDC
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v5
         with:
-          node-version: "20.x"
+          node-version: "24.x"
           registry-url: "https://registry.npmjs.org"
 
-      - name: Update npm to latest # Required for Trusted Publishers
+      - name: Update npm to latest
         run: npm install -g npm@latest
 
       - name: Install dependencies
