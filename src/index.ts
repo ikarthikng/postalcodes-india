@@ -6,31 +6,13 @@ import {
   Coordinates,
   LocationHierarchy
 } from "./types.js"
-import { loadPostalCodeData } from "./loader.js"
+// @ts-ignore
+import postalCodeDataArray from "../data/postal-data.js"
 
-// Load postal code data during module initialization
-const postalCodeMap = loadPostalCodeData()
-
-/**
- * Normalized postal code lookup helper
- * @param postalCode Postal code to normalize and look up
- * @returns Tuple of [normalized postal code, lookup result]
- */
-function normalizedLookup(postalCode: string): [string, PostalCodeInfo | null] {
-  // Handle null or undefined inputs
-  if (postalCode === null || postalCode === undefined) {
-    return ["", null]
-  }
-
-  const normalizedPostal = postalCode.trim()
-
-  // Indian postal codes are 6 digits
-  if (!/^\d{6}$/.test(normalizedPostal)) {
-    return [normalizedPostal, null]
-  }
-
-  return [normalizedPostal, postalCodeMap.get(normalizedPostal) || null]
-}
+// Build the in-memory lookup during module initialization
+const postalCodeMap = new Map<string, PostalCodeInfo>(
+  (postalCodeDataArray as PostalCodeInfo[]).map((info) => [info.postalCode, info])
+)
 
 /**
  * Finds complete information for a postal code
@@ -38,19 +20,10 @@ function normalizedLookup(postalCode: string): [string, PostalCodeInfo | null] {
  * @returns Object with location data and validity flag
  */
 export function find(postalCode: string): PostalLookupResult {
-  const [normalized, info] = normalizedLookup(postalCode)
+  const info = postalCodeMap.get(postalCode?.trim() ?? "")
 
   if (!info) {
-    return {
-      state: "",
-      stateCode: "",
-      district: "",
-      subDistrict: "",
-      place: "",
-      latitude: 0,
-      longitude: 0,
-      isValid: false
-    }
+    return { state: "", stateCode: "", district: "", subDistrict: "", place: "", latitude: 0, longitude: 0, isValid: false }
   }
 
   return {
@@ -65,118 +38,36 @@ export function find(postalCode: string): PostalLookupResult {
   }
 }
 
-/**
- * Finds state information for a postal code
- * @param postalCode 6-digit postal code to look up
- * @returns State name and code with validity flag
- */
+/** Finds state name and code for a postal code */
 export function findState(postalCode: string): StateResult {
-  const [normalized, info] = normalizedLookup(postalCode)
-
-  if (!info) {
-    return {
-      state: "",
-      stateCode: "",
-      isValid: false
-    }
-  }
-
-  return {
-    state: info.stateName,
-    stateCode: info.stateCode,
-    isValid: true
-  }
+  const { state, stateCode, isValid } = find(postalCode)
+  return { state, stateCode, isValid }
 }
 
-/**
- * Finds district information for a postal code
- * @param postalCode 6-digit postal code to look up
- * @returns District information with validity flag
- */
+/** Finds district information for a postal code */
 export function findDistrict(postalCode: string): DistrictResult {
-  const [normalized, info] = normalizedLookup(postalCode)
-
-  if (!info) {
-    return {
-      district: "",
-      districtCode: "",
-      state: "",
-      stateCode: "",
-      isValid: false
-    }
-  }
-
-  return {
-    district: info.districtName,
-    districtCode: info.districtCode,
-    state: info.stateName,
-    stateCode: info.stateCode,
-    isValid: true
-  }
+  const { district, districtCode, state, stateCode, isValid } = findHierarchy(postalCode)
+  return { district, districtCode, state, stateCode, isValid }
 }
 
-/**
- * Finds place name for a postal code
- * @param postalCode 6-digit postal code to look up
- * @returns Place name or empty string with validity flag
- */
+/** Finds place name for a postal code */
 export function findPlace(postalCode: string): { place: string; isValid: boolean } {
-  const [normalized, info] = normalizedLookup(postalCode)
-
-  if (!info) {
-    return {
-      place: "",
-      isValid: false
-    }
-  }
-
-  return {
-    place: info.placeName,
-    isValid: true
-  }
+  const { place, isValid } = find(postalCode)
+  return { place, isValid }
 }
 
-/**
- * Finds coordinates for a postal code
- * @param postalCode 6-digit postal code to look up
- * @returns Latitude and longitude with validity flag
- */
+/** Finds coordinates for a postal code */
 export function findCoordinates(postalCode: string): Coordinates {
-  const [normalized, info] = normalizedLookup(postalCode)
-
-  if (!info) {
-    return {
-      latitude: 0,
-      longitude: 0,
-      isValid: false
-    }
-  }
-
-  return {
-    latitude: info.latitude,
-    longitude: info.longitude,
-    isValid: true
-  }
+  const { latitude, longitude, isValid } = find(postalCode)
+  return { latitude, longitude, isValid }
 }
 
-/**
- * Finds location hierarchy for a postal code
- * @param postalCode 6-digit postal code to look up
- * @returns Complete location hierarchy with validity flag
- */
+/** Finds location hierarchy for a postal code */
 export function findHierarchy(postalCode: string): LocationHierarchy {
-  const [normalized, info] = normalizedLookup(postalCode)
+  const info = postalCodeMap.get(postalCode?.trim() ?? "")
 
   if (!info) {
-    return {
-      state: "",
-      stateCode: "",
-      district: "",
-      districtCode: "",
-      subDistrict: "",
-      place: "",
-      isValid: false
-    }
+    return { state: "", stateCode: "", district: "", districtCode: "", subDistrict: "", place: "", isValid: false }
   }
 
   return {
@@ -188,44 +79,37 @@ export function findHierarchy(postalCode: string): LocationHierarchy {
     place: info.placeName,
     isValid: true
   }
+}
+
+function filterBy(field: "placeName" | "districtName", value: string, stateCode: string): PostalCodeInfo[] {
+  if (!value || !stateCode) {
+    return []
+  }
+
+  const normalizedValue = value.trim().toLowerCase()
+  const normalizedState = stateCode.trim()
+
+  return [...postalCodeMap.values()].filter(
+    (info) => info[field].toLowerCase() === normalizedValue && info.stateCode === normalizedState
+  )
 }
 
 /**
  * Finds all postal codes for a given place and state
  * @param place Place name
  * @param stateCode State code
- * @returns Array of matching postal codes with their information
  */
 export function findByPlace(place: string, stateCode: string): PostalCodeInfo[] {
-  if (!place || !stateCode) {
-    return []
-  }
-
-  const normalizedPlace = place.trim().toLowerCase()
-  const normalizedState = stateCode.trim()
-
-  return Array.from(postalCodeMap.values()).filter(
-    (info) => info.placeName.toLowerCase() === normalizedPlace && info.stateCode === normalizedState
-  )
+  return filterBy("placeName", place, stateCode)
 }
 
 /**
  * Find all postal codes in a given district
  * @param districtName District name
  * @param stateCode State code
- * @returns Array of matching postal codes with their information
  */
 export function findByDistrict(districtName: string, stateCode: string): PostalCodeInfo[] {
-  if (!districtName || !stateCode) {
-    return []
-  }
-
-  const normalizedDistrict = districtName.trim().toLowerCase()
-  const normalizedState = stateCode.trim()
-
-  return Array.from(postalCodeMap.values()).filter(
-    (info) => info.districtName.toLowerCase() === normalizedDistrict && info.stateCode === normalizedState
-  )
+  return filterBy("districtName", districtName, stateCode)
 }
 
 /**

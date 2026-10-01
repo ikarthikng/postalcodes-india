@@ -388,6 +388,16 @@ Finds postal codes within a radius of coordinates, sorted by distance. Returns a
 
 Returns all states and union territories with their codes and names.
 
+## Development
+
+`data/IN.txt` (GeoNames) is the source of truth. `data/postal-data.js` is generated from it and is not committed.
+
+```bash
+npm ci            # installs and runs the build (generates data/postal-data.js, then bundles)
+npm test
+npm run process-data   # regenerate data/postal-data.js after editing data/IN.txt
+```
+
 ## Related Projects
 
 Looking for US ZIP codes? Check out **[zipcodes-us](https://github.com/ikarthikng/zipcodes-us)** - the same functionality for the United States! 🇺🇸
